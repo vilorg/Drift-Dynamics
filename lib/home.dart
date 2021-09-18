@@ -5,11 +5,14 @@ import 'dart:ui';
 import 'package:drift_dynamics/database/round.dart';
 import 'package:drift_dynamics/database/session.dart';
 import 'package:drift_dynamics/database/session_list.dart';
+import 'package:drift_dynamics/domain/user.dart';
+import 'package:drift_dynamics/providers/user_provider.dart';
+import 'package:drift_dynamics/util/app_url.dart';
+import 'package:drift_dynamics/util/shared_preference.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:drift_dynamics/response/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
 class Homepage extends StatefulWidget {
@@ -18,7 +21,6 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  String login = "User", password, token;
   Round selectedRound =
       Round.fromMap(json.decode('{"id":-1,"name":"2018 RDS GP Round 1"}'));
 
@@ -31,34 +33,13 @@ class _HomepageState extends State<Homepage> {
   double maxTime = 0;
 
   _HomepageState() {
-    getToken();
     getRounds();
-  }
-
-  void getToken() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    login = prefs.getString("login");
-    password = prefs.getString("password");
-    var response = await http.post(
-      "http://drift-dynamics.com/auth/",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: "login=" + login + "&pass=" + password,
-    );
-    assert(response.statusCode == HttpStatus.ok);
-    token = Login.fromJson(jsonDecode(response.body.toString())).token;
-  }
-
-  void logout() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('login', null);
-    prefs.setString('password', null);
-    Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false);
   }
 
   @override
   Widget build(BuildContext context) {
+    User user = Provider.of<UserProvider>(context).user;
+
     var padding = MediaQuery.of(context).padding;
     double height =
         MediaQuery.of(context).size.height - padding.top - padding.bottom;
@@ -75,7 +56,7 @@ class _HomepageState extends State<Homepage> {
                   height: height / 14,
                   child: Center(
                       child: Text(
-                    login,
+                    user.login,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ))),
               TablePilots(height, width),
@@ -137,7 +118,11 @@ class _HomepageState extends State<Homepage> {
                 elevation: 0.0,
                 child: new Icon(Icons.login, color: Colors.black),
                 backgroundColor: Colors.transparent,
-                onPressed: () {logout();}),
+                onPressed: () {
+                  UserPreferences().removeUser();
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, "/login", (route) => false);
+                }),
             floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
           );
         }
@@ -162,12 +147,13 @@ class _HomepageState extends State<Homepage> {
   }
 
   void getRounds() async {
+    User user = Provider.of<UserProvider>(context, listen: false).user;
     var response = await http.post(
       "http://drift-dynamics.com/get_rounds/",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: "token=" + token,
+      body: "token=" + user.token,
     );
     assert(response.statusCode == HttpStatus.ok);
     List res = json.decode(response.body)["Items"];
@@ -181,12 +167,13 @@ class _HomepageState extends State<Homepage> {
   }
 
   void getAllSessionList() async {
+    User user = Provider.of<UserProvider>(context, listen: false).user;
     var response = await http.post(
       "http://drift-dynamics.com/get_session_list/",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: "token=" + token + "&round_id=" + selectedRound.id.toString(),
+      body: "token=" + user.token + "&round_id=" + selectedRound.id.toString(),
     );
     assert(response.statusCode == HttpStatus.ok);
     List res = json.decode(response.body)["Items"];
@@ -202,14 +189,15 @@ class _HomepageState extends State<Homepage> {
   }
 
   void getAllSession() async {
+    User user = Provider.of<UserProvider>(context, listen: false).user;
     allSession = [];
     for (int index in indexSessionList) {
       var response = await http.post(
-        "http://drift-dynamics.com/get_session/",
+        AppUrl.getSession,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: "token=" + token + "&session_id=" + index.toString(),
+        body: "token=" + user.token + "&session_id=" + index.toString(),
       );
       assert(response.statusCode == HttpStatus.ok);
       Session session = Session.fromMap(jsonDecode(response.body));
@@ -221,42 +209,41 @@ class _HomepageState extends State<Homepage> {
 
   LineChartData mainData() {
     return LineChartData(
-      gridData: FlGridData(show: true, drawVerticalLine: true),
-      titlesData: FlTitlesData(
-        show: true,
-        rightTitles: SideTitles(showTitles: false),
-        topTitles: SideTitles(showTitles: false),
-        bottomTitles: SideTitles(
-          showTitles: true,
-          reservedSize: 22,
-          interval: 10000,
-          getTextStyles: (context, value) =>
-              const TextStyle(color: Colors.black, fontSize: 16),
-          getTitles: (value) {
-            return (value/1000).toInt().toString();
-          },
-          margin: 8,
-        ),
-        leftTitles: SideTitles(
-          showTitles: true,
-          interval: 100,
-          getTextStyles: (context, value) => const TextStyle(
-            color: Colors.black,
-            fontSize: 15,
+        gridData: FlGridData(show: true, drawVerticalLine: true),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: SideTitles(showTitles: false),
+          topTitles: SideTitles(showTitles: false),
+          bottomTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 22,
+            interval: 10000,
+            getTextStyles: (context, value) =>
+                const TextStyle(color: Colors.black, fontSize: 16),
+            getTitles: (value) {
+              return (value / 1000).toInt().toString();
+            },
+            margin: 8,
           ),
-          getTitles: (value) {
-            return value.toString();
-          },
-          reservedSize: 32,
-          margin: 12,
+          leftTitles: SideTitles(
+            showTitles: true,
+            interval: 100,
+            getTextStyles: (context, value) => const TextStyle(
+              color: Colors.black,
+              fontSize: 15,
+            ),
+            getTitles: (value) {
+              return value.toString();
+            },
+            reservedSize: 32,
+            margin: 12,
+          ),
         ),
-      ),
-      minX: 0,
-      maxX: maxTime,
-      minY: -150,
-      maxY: 150,
-      lineBarsData: drawGraphs()
-    );
+        minX: 0,
+        maxX: maxTime,
+        minY: -150,
+        maxY: 150,
+        lineBarsData: drawGraphs());
   }
 
   Container TablePilots(height, width) {
@@ -311,8 +298,9 @@ class _HomepageState extends State<Homepage> {
               itemBuilder: (BuildContext context, int index) {
                 if (colors.length != 0) {
                   Color color = Colors.transparent;
-                  try {color = colors[index][1];
-                  } on Exception catch(_) {}
+                  try {
+                    color = colors[index][1];
+                  } on Exception catch (_) {}
                   return Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -500,28 +488,32 @@ class _HomepageState extends State<Homepage> {
   drawGraphs() {
     List<LineChartBarData> result = [];
     int index = 0;
-    for (Session session in allSession){
+    for (Session session in allSession) {
       List<FlSpot> arraySpeed = [];
       List<FlSpot> arrayAngle = [];
       List data = session.session;
-      for (List item in data){
-        if (item[1].toDouble()>maxTime){
+      for (List item in data) {
+        if (item[1].toDouble() > maxTime) {
           maxTime = item[1].toDouble();
         }
         arraySpeed.add(FlSpot(item[1].toDouble(), item[4].toDouble()));
         arrayAngle.add(FlSpot(item[1].toDouble(), item[5].toDouble()));
       }
-      result.add(
-        LineChartBarData(spots: arraySpeed,
-          isCurved: false, barWidth: 3, dotData: FlDotData(show: false), colors: [colors[index][1]],
-        )
-      );
-      result.add(
-          LineChartBarData(spots: arrayAngle,
-            isCurved: false, barWidth: 3, dotData: FlDotData(show: false), colors: [colors[index][1]],
-          )
-      );
-      index+=1;
+      result.add(LineChartBarData(
+        spots: arraySpeed,
+        isCurved: false,
+        barWidth: 3,
+        dotData: FlDotData(show: false),
+        colors: [colors[index][1]],
+      ));
+      result.add(LineChartBarData(
+        spots: arrayAngle,
+        isCurved: false,
+        barWidth: 3,
+        dotData: FlDotData(show: false),
+        colors: [colors[index][1]],
+      ));
+      index += 1;
     }
     return result;
   }
