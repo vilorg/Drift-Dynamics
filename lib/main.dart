@@ -1,13 +1,16 @@
+import 'package:drift_dynamics/get_data.dart';
 import 'package:drift_dynamics/home.dart';
 import 'package:drift_dynamics/login.dart';
 import 'package:drift_dynamics/providers/auth.dart';
+import 'package:drift_dynamics/providers/data_page.dart';
 import 'package:drift_dynamics/providers/user_provider.dart';
 import 'package:drift_dynamics/util/shared_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'database/session_list.dart';
+import 'domain/data.dart';
 import 'domain/user.dart';
-
 
 void main() => runApp(MyApp());
 
@@ -20,7 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider())
+        ChangeNotifierProvider(create: (_) => DataPageProvider())
       ],
       child: MaterialApp(
           title: 'Flutter Demo',
@@ -41,15 +44,16 @@ class MyApp extends StatelessWidget {
                     else if (snapshot.data.token == null)
                       return Login();
                     else {
+                      UserProvider userProvider =
+                          Provider.of<UserProvider>(context);
+                      AuthProvider auth = Provider.of<AuthProvider>(context);
+                      auth.refreshToken();
                       User user = new User(
                           login: snapshot.data.login,
                           password: snapshot.data.password,
                           token: snapshot.data.token);
-                      UserProvider userProvider = Provider.of<UserProvider>(
-                          context);
                       userProvider.setUser(user);
-                      AuthProvider auth = Provider.of<AuthProvider>(context);
-                      auth.refreshToken();
+                      GetData().getRounds(context);
                       return Homepage();
                     }
                 }

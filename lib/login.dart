@@ -6,6 +6,8 @@ import 'package:drift_dynamics/providers/user_provider.dart';
 import 'package:drift_dynamics/util/widgets.dart';
 import 'package:provider/provider.dart';
 
+import 'get_data.dart';
+
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
@@ -56,6 +58,7 @@ class _LoginState extends State<Login> {
           if (response['status']) {
             User user = response['user'];
             Provider.of<UserProvider>(context, listen: false).setUser(user);
+            GetData().getRounds(context);
             Navigator.pushReplacementNamed(context, '/dashboard');
           } else {
             Flushbar(
@@ -92,7 +95,8 @@ class _LoginState extends State<Login> {
                 auth.loggedInStatus == Status.Authenticating
                     ? loading
                     : longButtons("Login", doLogin),
-                SizedBox(height: 5.0)
+                SizedBox(height: 5.0),
+                Text("Предварительная сборка. Не для релиза", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),)
               ],
             ),
           ),
