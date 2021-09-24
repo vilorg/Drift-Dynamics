@@ -4,8 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'database/session.dart';
-import 'domain/data.dart';
+import '../database/session.dart';
+import '../domain/data.dart';
 
 class DrawGraphs {
   mainData(context) {
@@ -50,8 +50,8 @@ class DrawGraphs {
         lineBarsData: drawGraphs(context),
         minX: 0,
         maxX: data.maxTime,
-        minY: -150,
-        maxY: 150,
+        minY: -100,
+        maxY: 200,
         lineTouchData: LineTouchData(
           handleBuiltInTouches: true,
           touchTooltipData: LineTouchTooltipData(
@@ -78,7 +78,12 @@ class DrawGraphs {
                                 .toString(),
                         TextStyle(fontSize: 15, color: data.colors[i])));
                   } catch (e) {
-                    print(e);
+                    result.add(LineTooltipItem(
+                        "Данных нет...",
+                        TextStyle(fontSize: 15, color: data.colors[i])));
+                    result.add(LineTooltipItem(
+                        "Данных нет...",
+                        TextStyle(fontSize: 15, color: data.colors[i])));
                   }
                 }
                 return new List<LineTooltipItem>.from(result);
@@ -88,8 +93,8 @@ class DrawGraphs {
           horizontalLines: [HorizontalLine(y: 0.0, color: Colors.black38),
             HorizontalLine(y: 50.0, color: Colors.grey, strokeWidth: 0.2),
             HorizontalLine(y: 100.0, color: Colors.grey, strokeWidth: 0.2),
+            HorizontalLine(y: 150.0, color: Colors.grey, strokeWidth: 0.2),
             HorizontalLine(y: -50.0, color: Colors.grey, strokeWidth: 0.2),
-            HorizontalLine(y: -100.0, color: Colors.grey, strokeWidth: 0.2),
           ],verticalLines: vertical)));
   }
 

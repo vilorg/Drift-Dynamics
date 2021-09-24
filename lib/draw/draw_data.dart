@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 import 'package:drift_dynamics/database/round.dart';
-import 'package:drift_dynamics/get_data.dart';
+import 'package:drift_dynamics/draw/get_data.dart';
 import 'package:drift_dynamics/providers/data_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'domain/data.dart';
+import '../domain/data.dart';
 
 class DrawData {
   listRounds(height, width, context) {
@@ -204,7 +204,7 @@ class DrawData {
                 padding: const EdgeInsets.all(8),
                 itemCount: dataPageProvider.data.allSessionList.length,
                 itemBuilder: (BuildContext context, int index) {
-                  Color colorItem = Colors.transparent;
+                  Color colorItem = Colors.white;
                   if (dataPageProvider.data.currentIndexesSession != null) {
                     for (int i = 0;
                         i < dataPageProvider.data.currentIndexesSession.length;

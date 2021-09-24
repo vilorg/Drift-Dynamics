@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:ui';
-import 'package:drift_dynamics/database/round.dart';
 import 'package:drift_dynamics/domain/user.dart';
-import 'package:drift_dynamics/draw_data.dart';
-import 'package:drift_dynamics/draw_graphs.dart';
-import 'package:drift_dynamics/get_data.dart';
+import 'package:drift_dynamics/draw/draw_data.dart';
+import 'package:drift_dynamics/draw/draw_graphs.dart';
+import 'package:drift_dynamics/draw/get_data.dart';
 import 'package:drift_dynamics/providers/data_page.dart';
 import 'package:drift_dynamics/providers/user_provider.dart';
 import 'package:drift_dynamics/util/shared_preference.dart';
@@ -73,13 +71,9 @@ class _HomepageState extends State<Homepage> {
                         width: 2 * width / 7,
                         child: ElevatedButton(
                             onPressed: () {
-                              GetData().getRounds(context);
+                              dataPageProvider.setSelectedRound(dataPageProvider.data.selectedRound);
                               dataPageProvider.setAllSessionList(null);
-                              dataPageProvider.setCurrentSessions(null);
-                              dataPageProvider.setCurrentIndexesSession([]);
-                              dataPageProvider.setSelectedRound(Round.fromMap(
-                                  json.decode(
-                                      '{"id":0,"name":"Select round"}')));
+                              GetData().getAllSessionList(context);
                             },
                             child:
                                 Text("Refresh", textAlign: TextAlign.center))),
@@ -100,8 +94,10 @@ class _HomepageState extends State<Homepage> {
             floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
           );
         }
-        return Stack(children: <Widget>[
-          Center(
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: Container(
+            height: width,
             child: AspectRatio(
               aspectRatio: relation,
               child: Container(
@@ -113,8 +109,24 @@ class _HomepageState extends State<Homepage> {
                 ),
               ),
             ),
-          )
-        ]);
+          ),
+          );
+
+        // return Stack(children: <Widget>[
+        //   Center(
+        //     child: AspectRatio(
+        //       aspectRatio: relation,
+        //       child: Container(
+        //         decoration: const BoxDecoration(color: Colors.white),
+        //         child: Padding(
+        //           padding: const EdgeInsets.only(
+        //               right: 18.0, left: 12.0, top: 24, bottom: 12),
+        //           child: DrawGraphs().mainData(context),
+        //         ),
+        //       ),
+        //     ),
+        //   )
+        // ]);
       }),
     );
   }

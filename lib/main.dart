@@ -1,4 +1,4 @@
-import 'package:drift_dynamics/get_data.dart';
+import 'package:drift_dynamics/draw/get_data.dart';
 import 'package:drift_dynamics/home.dart';
 import 'package:drift_dynamics/login.dart';
 import 'package:drift_dynamics/providers/auth.dart';
@@ -8,8 +8,6 @@ import 'package:drift_dynamics/util/shared_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'database/session_list.dart';
-import 'domain/data.dart';
 import 'domain/user.dart';
 
 void main() => runApp(MyApp());

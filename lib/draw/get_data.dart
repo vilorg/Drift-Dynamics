@@ -7,10 +7,10 @@ import 'package:drift_dynamics/providers/user_provider.dart';
 import 'package:drift_dynamics/util/app_url.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import 'database/round.dart';
-import 'database/session.dart';
-import 'database/session_list.dart';
-import 'domain/user.dart';
+import '../database/round.dart';
+import '../database/session.dart';
+import '../database/session_list.dart';
+import '../domain/user.dart';
 
 class GetData {
   void getRounds(context) async {

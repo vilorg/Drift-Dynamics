@@ -6,7 +6,7 @@ import 'package:drift_dynamics/providers/user_provider.dart';
 import 'package:drift_dynamics/util/widgets.dart';
 import 'package:provider/provider.dart';
 
-import 'get_data.dart';
+import 'draw/get_data.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -96,8 +96,7 @@ class _LoginState extends State<Login> {
                     ? loading
                     : longButtons("Login", doLogin),
                 SizedBox(height: 5.0),
-                Text("Предварительная сборка. Не для релиза", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),)
-              ],
+                ],
             ),
           ),
         ),
